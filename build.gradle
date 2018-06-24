@@ -3,7 +3,7 @@ apply plugin: "jacoco"
 
 version = '1.0.0'
 
-description = """AssignmentJuly2018"""
+description = """book-club"""
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
