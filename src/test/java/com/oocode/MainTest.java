@@ -94,8 +94,7 @@ public class MainTest {
         BookClub bookClub = new BookClub(this.isClassicResolver);
         bookClub.addReview("Hello World", "great");
         bookClub.addReview("Hello Wally", "boring");
-        // Should pass but it depends what the external service
-        // determines is a "classic", which might change
+
         assertEquals(singletonList("Hello World"),
                 bookClub.classics("HW"));
         assertEquals(singletonList("Hello World"),

@@ -46,7 +46,6 @@ public class BookClub {
 
     private List<String> searchByTitleInitials(String bookTitleInitials) {
         Set<String> bookTitles = listMap.keySet();
-        test();
         return bookTitles.stream()
                 .filter(b -> Arrays.stream(b.split(" "))
                                 .map(e -> ("" + e.charAt(0)).toLowerCase())
@@ -55,10 +54,4 @@ public class BookClub {
                 .sorted(Comparator.naturalOrder())
                 .collect(Collectors.toList());
     }
-
-    private Boolean test()
-    {
-        return true;
-    }
-
 }
