@@ -34,12 +34,12 @@ public class BookClubIntegrationTest {
     public void Should_ReturnOnlyClassicBookTitles_WhenSearchByTitleOrByInitialsAndConnectingUsingHTTP() {
         IsClassicResolverWithExternalService externalService = new IsClassicResolverWithExternalService("http://www.isclassicbooktesolver.com/isClassic/");
         BookClub bookClub = new BookClub(externalService);
-        bookClub.addReview("BookTitle1", "great");
+        bookClub.addReview("BookTitle1", new Review("great"));
 
         assertEquals(singletonList("BookTitle1"),
-                bookClub.classics("B"));
+                bookClub.searchForClassicsOnly("B"));
         assertEquals(singletonList("BookTitle1"),
-                bookClub.classics("Boo"));
+                bookClub.searchForClassicsOnly("Boo"));
 
         hoverflyRule.verify(service(RequestFieldMatcher.newGlobMatcher(matcher)).get("/isClassic/BookTitle1"), times(2));
     }
@@ -48,12 +48,12 @@ public class BookClubIntegrationTest {
     public void ShouldNot_ReturnBookTitles_WhenSearchByTitleOrByInitialsAndConnectingUsingHTTP() {
         IsClassicResolverWithExternalService externalService = new IsClassicResolverWithExternalService("http://www.isclassicbooktesolver.com/isClassic/");
         BookClub bookClub = new BookClub(externalService);
-        bookClub.addReview("BookTitle2", "great");
+        bookClub.addReview("BookTitle2", new Review("great"));
 
         assertEquals(asList(),
-                bookClub.classics("B"));
+                bookClub.searchForClassicsOnly("B"));
         assertEquals(asList(),
-                bookClub.classics("Boo"));
+                bookClub.searchForClassicsOnly("Boo"));
 
         hoverflyRule.verify(service(RequestFieldMatcher.newGlobMatcher(matcher)).get("/isClassic/BookTitle2"), times(2));
     }

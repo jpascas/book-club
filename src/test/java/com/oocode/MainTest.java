@@ -22,11 +22,13 @@ public class MainTest {
         when(this.isClassicResolver.isClassic("Hello World")).thenReturn(true);
     }
 
+
+
     @Test
     public void Should_SearchingForTitleAndReturnOrderedMatchingBookTitles_WhenSearchStringIsLowerCase() {
         BookClub bookClub = new BookClub(this.isClassicResolver);
-        bookClub.addReview("Hello World", "great");
-        bookClub.addReview("Hello Wally", "boring");
+        bookClub.addReview("Hello World", new Review("great"));
+        bookClub.addReview("Hello Wally",  new Review("boring"));
 
         assertEquals("if search string is NOT ALL UPPER case " +
                         "then it means search matching start of title",
@@ -39,8 +41,8 @@ public class MainTest {
     @Test
     public void Should_SearchForInitialsAndReturnOrderedMatchingBookTitles_WhenSearchStringIsUpperCase() {
         BookClub bookClub = new BookClub(this.isClassicResolver);
-        bookClub.addReview("Hello World", "great");
-        bookClub.addReview("Hello Wally", "boring");
+        bookClub.addReview("Hello World",  new Review("great"));
+        bookClub.addReview("Hello Wally",  new Review("boring"));
 
         assertEquals("if search string is ALL UPPER case " +
                         "then it means search by initials",
@@ -51,9 +53,9 @@ public class MainTest {
     @Test
     public void Should_SearchForInitialsAndReturnOrderedMatching_WhenSearchStringIsUpperCaseWithThreeAddedReviews() {
         BookClub bookClub = new BookClub(this.isClassicResolver);
-        bookClub.addReview("Hello", "boring");
-        bookClub.addReview("Hi", "boring");
-        bookClub.addReview("Halloha", "boring");
+        bookClub.addReview("Hello",  new Review("boring"));
+        bookClub.addReview("Hi",  new Review("boring"));
+        bookClub.addReview("Halloha",  new Review("boring"));
 
         List<String> expectedResult = asList("Halloha", "Hello", "Hi");
         List<String> realResult = bookClub.search("H");
@@ -68,8 +70,8 @@ public class MainTest {
     @Test
     public void Should_ReturnOrderedMatchingBookTitles_WhenSearchByTitleOrByInitials() {
         BookClub bookClub = new BookClub(this.isClassicResolver);
-        bookClub.addReview("hello world", "great");
-        bookClub.addReview("hello wally", "boring");
+        bookClub.addReview("hello world",  new Review("great"));
+        bookClub.addReview("hello wally",  new Review("boring"));
 
         assertEquals(asList("hello wally", "hello world"),
                 bookClub.search("Hel"));
@@ -82,35 +84,37 @@ public class MainTest {
     @Test
     public void Should_ReturnReviewsForABook_WhenReviewsAreRequestedForABook() {
         BookClub bookClub = new BookClub(this.isClassicResolver);
-        bookClub.addReview("Hello World", "great");
-        bookClub.addReview("Hello World", "the best book ever");
+        Review reviewA = new Review("great");
+        bookClub.addReview("Hello World",  reviewA);
+        Review reviewB = new Review("the best book ever");
+        bookClub.addReview("Hello World",  reviewB);
 
-        assertEquals(asList("great", "the best book ever"),
-                bookClub.reviewsFor("Hello World"));
+        assertEquals(asList(reviewA.getText(), reviewB.getText()),
+                bookClub.getReviewsFor("Hello World"));
     }
 
     @Test
     public void Should_ReturnOnlyClassicBookTitles_WhenSearchByTitleOrByInitials() {
         BookClub bookClub = new BookClub(this.isClassicResolver);
-        bookClub.addReview("Hello World", "great");
-        bookClub.addReview("Hello Wally", "boring");
+        bookClub.addReview("Hello World",  new Review("great"));
+        bookClub.addReview("Hello Wally",  new Review("boring"));
 
         assertEquals(singletonList("Hello World"),
-                bookClub.classics("HW"));
+                bookClub.searchForClassicsOnly("HW"));
         assertEquals(singletonList("Hello World"),
-                bookClub.classics("He"));
+                bookClub.searchForClassicsOnly("He"));
     }
 
 
     @Test
     public void Should_ReturnOnlyClassicBookTitles_WhenSearchByTitleOrByInitialsForAWeirdBook() {
         BookClub bookClub = new BookClub(this.isClassicResolver);
-        bookClub.addReview("This is a very weird book", "great");
+        bookClub.addReview("This is a very weird book",  new Review("great"));
 
         assertEquals(singletonList("This is a very weird book"),
-                bookClub.classics("T"));
+                bookClub.searchForClassicsOnly("T"));
         assertEquals(singletonList("This is a very weird book"),
-                bookClub.classics("This"));
+                bookClub.searchForClassicsOnly("This"));
 
         verify(isClassicResolver, times(2)).isClassic("This is a very weird book");
     }
