@@ -1,7 +1,7 @@
 package com.oocode;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Book {
 
@@ -23,6 +23,22 @@ public class Book {
     public List<Review> getReviews()
     {
         return this.reviews;
+    }
+
+    private static final int DEAFAUlTYEARLIMIT = 1;
+
+    public Boolean IsLastReviewOlderThanDefaultLimit()
+    {
+        Date mostRecentReviewDate = this.getMostRecentReviewDate();
+        Calendar calendar  = Calendar.getInstance();
+        calendar.add(Calendar.YEAR, -DEAFAUlTYEARLIMIT);
+        Date limitDate = calendar.getTime();
+        return mostRecentReviewDate.before(limitDate);
+    }
+
+    public Date getMostRecentReviewDate()
+    {
+        return this.reviews.stream().map(review -> review.getDate()).sorted(Comparator.reverseOrder()).collect(Collectors.toList()).get(0);
     }
 
     @Override

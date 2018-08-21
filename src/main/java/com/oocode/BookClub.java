@@ -50,19 +50,30 @@ public class BookClub implements BookClubManager {
 
     private List<String> searchByTitle(String bookTitle) {
         Set<String> bookTitles = listMap.keySet();
-        return bookTitles.stream()
+        List<String> preEliminarBookTitlesResult = bookTitles.stream()
                 .filter(b -> b.toLowerCase().startsWith(bookTitle.toLowerCase()))
-                .sorted(Comparator.naturalOrder())
                 .collect(Collectors.toList());
+        //Since we are dependant on a external resource for resource if its classic, i think it will be more efficient for now to do this
+        //after the text filter si completed
+       return applyIsClassicOrIsLastReviewOlderThanDefaultLimitFilter(preEliminarBookTitlesResult);
     }
 
     private List<String> searchByTitleInitials(String bookTitleInitials) {
         Set<String> bookTitles = listMap.keySet();
-        return bookTitles.stream()
+        List<String> preEliminarBookTitlesResult =  bookTitles.stream()
                 .filter(b -> Arrays.stream(b.split(" "))
                                 .map(e -> ("" + e.charAt(0)).toLowerCase())
                                 .collect(Collectors.joining())
                         .startsWith(bookTitleInitials.toLowerCase()))
+                .sorted(Comparator.naturalOrder())
+                .collect(Collectors.toList());
+        return applyIsClassicOrIsLastReviewOlderThanDefaultLimitFilter(preEliminarBookTitlesResult);
+    }
+
+    private List<String> applyIsClassicOrIsLastReviewOlderThanDefaultLimitFilter(List<String> preEliminarBookTitlesResult) {
+        return preEliminarBookTitlesResult.stream().map(bt -> listMap.get(bt))
+                .filter(book -> isClassicResolver.isClassic(book.getTitle()) || !book.IsLastReviewOlderThanDefaultLimit())
+                .map(b -> b.getTitle())
                 .sorted(Comparator.naturalOrder())
                 .collect(Collectors.toList());
     }

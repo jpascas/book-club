@@ -1,0 +1,114 @@
+<html xmlns:concordion="http://www.concordion.org/2007/concordion">
+<head>
+    <link href="../../concordion.css" rel="stylesheet" type="text/css" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+
+<body>
+
+<h1>Books that has not been reviewed for more than a year, except when they are classic, should not be included on Search </h1>
+
+<h3>Assumptions</h3>
+<ul>
+    <li>The system currently doesn't hold or account for the publish/release date of the book</li>
+    <li>Currently the system doesn't allow Books without reviews, regardless on when they were actually published, so those scenarios wont be covered</li>
+</ul>
+
+<h4>Reminder about Searchs. If in the "Search term" column:</h4>
+<ul>
+    <li>If all character are CAPS like in "THE", a search by initials of the book title will be performed</li>
+    <li>If not all or any of the character are CAPS like in "The" or "the" a normal search will be performed</li>
+</ul>
+<div concordion:example="Exclusion-Based-On_ReviewAge-Should-affect-non-classic-books">
+
+    <h3>Examples for Non-Classic Books</h3>
+
+    <table concordion:execute="#result = SearchForBook(#bookTitle,#isClassic,#lastReviewOlderThanOneYear,#searchTerm)">
+        <tr>
+            <th concordion:set="#bookTitle">Book Title</th>
+            <th concordion:set="#isClassic">Is Classic</th>
+            <th concordion:set="#lastReviewOlderThanOneYear">Review Older than 1 Year</th>
+            <th concordion:set="#searchTerm">Search Term</th>
+            <th concordion:assert-equals="#result">Should Be In Search Results</th>
+        </tr>
+        <tr>
+            <td>Not a classic book</td>
+            <td>false</td>
+            <td>true</td>
+            <td>Not</td>
+            <td>false</td>
+        </tr>
+        <tr>
+            <td>Not a classic book</td>
+            <td>false</td>
+            <td>false</td>
+            <td>NA</td>
+            <td>true</td>
+        </tr>
+        <tr>
+            <td>The Art of Getting By</td>
+            <td>false</td>
+            <td>true</td>
+            <td>The</td>
+            <td>false</td>
+        </tr>
+        <tr>
+            <td>The Art of Getting By</td>
+            <td>false</td>
+            <td>false</td>
+            <td>TAO</td>
+            <td>true</td>
+        </tr>
+    </table>
+
+</div>
+
+
+
+<div concordion:example="Exclusion-Based-On_ReviewAge-Should-not-affect-classic-books">
+
+    <h3>Examples for Classic Books</h3>
+
+    <table concordion:execute="#result = SearchForBook(#bookTitle,#isClassic,#lastReviewOlderThanOneYear,#searchTerm)">
+        <tr>
+            <th concordion:set="#bookTitle">Book Title</th>
+            <th concordion:set="#isClassic">Is Classic</th>
+            <th concordion:set="#lastReviewOlderThanOneYear">Review Older than 1 Year</th>
+            <th concordion:set="#searchTerm">Search Term</th>
+            <th concordion:assert-equals="#result">Should Be In Search Results</th>
+        </tr>
+        <tr>
+            <td>Alice's Adventures in Wonderland</td>
+            <td>true</td>
+            <td>true</td>
+            <td>Alice</td>
+            <td>true</td>
+        </tr>
+        <tr>
+            <td>Alice's Adventures in Wonderland</td>
+            <td>true</td>
+            <td>false</td>
+            <td>AAIW</td>
+            <td>true</td>
+        </tr>
+        <tr>
+            <td>Fuente Ovejuna</td>
+            <td>true</td>
+            <td>true</td>
+            <td>Fue</td>
+            <td>true</td>
+        </tr>
+        <tr>
+            <td>Fuente Ovejuna</td>
+            <td>true</td>
+            <td>false</td>
+            <td>FO</td>
+            <td>true</td>
+        </tr>
+    </table>
+
+</div>
+
+
+</body>
+</html>
