@@ -1,35 +1,46 @@
 package com.oocode;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class BookClub {
-    private final Map<String, List<String>> listMap = new HashMap<>();
+public class BookClub implements BookClubManager {
 
-    public void addReview(String bookTitle, String review) {
-        listMap.putIfAbsent(bookTitle, new ArrayList<>());
-        listMap.get(bookTitle).add(review);
+    private final Map<String, Book> listMap = new HashMap<>();
+    private IsClassicResolver isClassicResolver;
+
+    public BookClub(
+            IsClassicResolver resolver){
+        this.isClassicResolver=resolver;
+    }
+    public BookClub(){
+        this(new IsClassicResolverWithExternalService());
     }
 
-    public List<String> reviewsFor(String bookTitle) {
-        return listMap.getOrDefault(bookTitle, Collections.emptyList());
+    @Override
+    public void addReview(String bookTitle, Review review) {
+        listMap.putIfAbsent(bookTitle, new Book(bookTitle));
+        listMap.get(bookTitle).addReview(review);
     }
 
-    public List<String> classics(String bookTitle) {
-        return search(bookTitle).stream().filter(BookClub::isClassic).sorted(Comparator.naturalOrder())
+    @Override
+    public List<String> getReviewsFor(String bookTitle) {
+        Book book = listMap.getOrDefault(bookTitle,null);
+        if (book!=null) {
+            return book.getReviews().stream().map(review -> review.getText()).collect(Collectors.toList());
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<String> searchForClassicsOnly(String bookTitle) {
+        return search(bookTitle).stream().filter(isClassicResolver::isClassic).sorted(Comparator.naturalOrder())
                 .collect(Collectors.toList());
     }
 
+    @Override
     public List<String> search(String bookTitleSearch) {
         if (bookTitleSearch == null  || bookTitleSearch.trim().equals("")) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Book Title cannot be null or empty");
         }
         if (bookTitleSearch.toUpperCase().equals(bookTitleSearch)) {
             return searchByTitleInitials(bookTitleSearch);
@@ -39,37 +50,31 @@ public class BookClub {
 
     private List<String> searchByTitle(String bookTitle) {
         Set<String> bookTitles = listMap.keySet();
-        return bookTitles.stream()
+        List<String> preEliminarBookTitlesResult = bookTitles.stream()
                 .filter(b -> b.toLowerCase().startsWith(bookTitle.toLowerCase()))
-                .sorted(Comparator.naturalOrder())
                 .collect(Collectors.toList());
+        //Since we are dependant on a external resource for resource if its classic, i think it will be more efficient for now to do this
+        //after the text filter si completed
+       return applyIsClassicOrIsLastReviewOlderThanDefaultLimitFilter(preEliminarBookTitlesResult);
     }
 
     private List<String> searchByTitleInitials(String bookTitleInitials) {
         Set<String> bookTitles = listMap.keySet();
-        return bookTitles.stream()
+        List<String> preEliminarBookTitlesResult =  bookTitles.stream()
                 .filter(b -> Arrays.stream(b.split(" "))
                                 .map(e -> ("" + e.charAt(0)).toLowerCase())
                                 .collect(Collectors.joining())
                         .startsWith(bookTitleInitials.toLowerCase()))
                 .sorted(Comparator.naturalOrder())
                 .collect(Collectors.toList());
+        return applyIsClassicOrIsLastReviewOlderThanDefaultLimitFilter(preEliminarBookTitlesResult);
     }
 
-    private static boolean isClassic(String bookTitle) {
-        URLConnection conn;
-        try {
-            conn = new URL("https://pure-coast-78546.herokuapp.com/isClassic/"
-                    + URLEncoder.encode(bookTitle, "UTF-8")).openConnection();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                conn.getInputStream(), StandardCharsets.UTF_8))) {
-            return reader.lines().collect(Collectors.joining("\n"))
-                    .contains("true");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    private List<String> applyIsClassicOrIsLastReviewOlderThanDefaultLimitFilter(List<String> preEliminarBookTitlesResult) {
+        return preEliminarBookTitlesResult.stream().map(bt -> listMap.get(bt))
+                .filter(book -> isClassicResolver.isClassic(book.getTitle()) || !book.IsLastReviewOlderThanDefaultLimit())
+                .map(b -> b.getTitle())
+                .sorted(Comparator.naturalOrder())
+                .collect(Collectors.toList());
     }
 }
